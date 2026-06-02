@@ -11,7 +11,6 @@ on:
         options:
           - arm64
           - x86_64
-          - armv7
       build_bpftools:
         description: '构建 bpftools?'
         type: boolean
@@ -46,8 +45,8 @@ jobs:
         run: make bpftools NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }} STATIC_LINKING=true
       - uses: actions/upload-artifact@v4
         with:
-          name: bpftools-android-${{ matrix.env['ARCH'] }}.tar.gz
-          path: bpftools-${{ matrix.env['ARCH'] }}.tar.gz
+          name: bpftools-android-${{ inputs.arch }}.tar.gz
+          path: bpftools-${{ inputs.arch }}.tar.gz
 
   build_bpftools_min:
     if: ${{ inputs.build_bpftools_min }}
@@ -68,8 +67,8 @@ jobs:
         run: make bpftools-min NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }}
       - uses: actions/upload-artifact@v4
         with:
-          name: bpftools-min-android-${{ matrix.env['ARCH'] }}.tar.gz
-          path: bpftools-min-${{ matrix.env['ARCH'] }}.tar.gz
+          name: bpftools-min-android-${{ inputs.arch }}.tar.gz
+          path: bpftools-min-${{ inputs.arch }}.tar.gz
 
   build_bpftrace_static:
     if: ${{ inputs.build_bpftrace }}
@@ -91,5 +90,5 @@ jobs:
         run: make bpftrace NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }} STATIC_LINKING=true LLVM_BPF_ONLY=true
       - uses: actions/upload-artifact@v4
         with:
-          name: bpftrace-android-${{ matrix.env['ARCH'] }}
-          path: out/android/${{ matrix.env['ARCH'] }}/bin/bpftrace
+          name: bpftrace-android-${{ inputs.arch }}
+          path: out/android/${{ inputs.arch }}/bin/bpftrace
