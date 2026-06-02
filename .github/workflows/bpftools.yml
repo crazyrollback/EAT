@@ -1,9 +1,33 @@
 name: Build bpftools archives
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: '选择目标架构'
+        required: true
+        default: 'arm64'
+        type: choice
+        options:
+          - arm64
+          - x86_64
+          - armv7
+      build_bpftools:
+        description: '构建 bpftools?'
+        type: boolean
+        default: true
+      build_bpftools_min:
+        description: '构建 bpftools-min?'
+        type: boolean
+        default: false
+      build_bpftrace:
+        description: '构建 bpftrace?'
+        type: boolean
+        default: false
 
 jobs:
   build_bpftools:
+    if: ${{ inputs.build_bpftools }}
     name: Build bpftools archive
     runs-on: ubuntu-22.04
     strategy:
@@ -19,13 +43,14 @@ jobs:
         run: ./scripts/download-ndk.sh
       - name: Build
         env: ${{matrix.env}}
-        run: make bpftools NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ matrix.env['ARCH'] }} STATIC_LINKING=true
+        run: make bpftools NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }} STATIC_LINKING=true
       - uses: actions/upload-artifact@v4
         with:
           name: bpftools-android-${{ matrix.env['ARCH'] }}.tar.gz
           path: bpftools-${{ matrix.env['ARCH'] }}.tar.gz
 
   build_bpftools_min:
+    if: ${{ inputs.build_bpftools_min }}
     name: Build bpftools-min archive
     runs-on: ubuntu-22.04
     strategy:
@@ -40,13 +65,14 @@ jobs:
       - name: Setup NDK
         run: ./scripts/download-ndk.sh
       - name: Build
-        run: make bpftools-min NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ matrix.env['ARCH'] }}
+        run: make bpftools-min NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: bpftools-min-android-${{ matrix.env['ARCH'] }}.tar.gz
           path: bpftools-min-${{ matrix.env['ARCH'] }}.tar.gz
 
   build_bpftrace_static:
+    if: ${{ inputs.build_bpftrace }}
     name: Build static bpftrace binaries
     runs-on: ubuntu-22.04
     strategy:
@@ -62,7 +88,7 @@ jobs:
       - name: Setup NDK
         run: ./scripts/download-ndk.sh
       - name: Build
-        run: make bpftrace NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ matrix.env['ARCH'] }} STATIC_LINKING=true LLVM_BPF_ONLY=true
+        run: make bpftrace NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ inputs.arch }} STATIC_LINKING=true LLVM_BPF_ONLY=true
       - uses: actions/upload-artifact@v4
         with:
           name: bpftrace-android-${{ matrix.env['ARCH'] }}
